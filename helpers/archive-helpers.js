@@ -29,48 +29,61 @@ exports.initialize = function(pathsObj){
 
 
 // returns a string list of the websites
-exports.readListOfUrls = readListOfUrls= function(){
+exports.readListOfUrls = function(inputUrl, cb){
 
-  var list = '';
-
-  fs.readFile(fileName, {encoding: 'utf-8'}, function(error, data) {
-    if(error) {
-      console.log('ERROR READING FILE');
-    } else {
-      list = data;
-    }
+  fs.readFile(exports.paths.list, {encoding: 'utf-8'}, function(error, data) {
+    // console.log(data)
+    if(error) throw err;
+    // console.log('in the middle, the list is: ', data);
+    var resultArray = data.split('\n');
+    // console.log('in the middle, the array is: ', resultArray);
+    // console.log('cb ', cb)
+    cb(resultArray);
   });
-
-  return list;
 
 };
 
 // returns a boolean indicating whether or not the url is in sites.txt 
-exports.isUrlInList = function(inputUrl){
+exports.isUrlInList = function(inputUrl, cb){
 
-  var list = readListOfUrls();
-  if(list.indexOf(inputUrl) > -1){
-    return true;
-  } else {
-    return false;
-  }
-};
-
-// appends a url to sites.txt
-exports.addUrlToList = function(inputUrl){
-  fs.appendFile(paths.list, inputUrl, function(err){
-    if (err) throw err;
+  var list = exports.readListOfUrls(inputUrl, function(list) {
+    // console.log('in isUrlInList, the list is: ', list);
+    if(list.indexOf(inputUrl) > -1){
+      console.log('in list');
+      cb(true);
+      // return true;
+    } else {
+      // console.log('not in list');
+      cb(false);
+      // return false;
+    }
   });
 
 };
 
-// returns a boolean indicating whether or not the site has been downloaded/archived 
-exports.isURLArchived = function(inputUrl){
-  fs.readdir(paths.archivedSites, function(err, files){
-    if (files.indexOf(inputUrl)){
-      return true;
+// appends a url to sites.txt
+exports.addUrlToList = function(inputUrl, cb){
+  // console.log(exports.paths.list);
+
+  exports.isUrlInList(inputUrl, function(bool) {
+    if (bool) {
+      console.log('already in the file');
     } else {
-      return false;
+      fs.appendFile(exports.paths.list, inputUrl + '\n', function(err, data) { 
+        if (err) throw err; 
+        cb(data); 
+      })      
+    }
+  })
+};
+
+// returns a boolean indicating whether or not the site has been downloaded/archived 
+exports.isURLArchived = function(inputUrl, cb){
+  fs.readdir(exports.paths.archivedSites, function(err, files){
+    if (files.indexOf(inputUrl)){
+      cb(true);
+    } else {
+      cb(false);
     }
   });
 };
@@ -86,16 +99,16 @@ exports.downloadUrls = function(inputUrl){
     data = res.buffer.toString();
   });
 
-  var file = paths.archivedSites + '/inputUrl'
+  var file = exports.paths.archivedSites + '/inputUrl'
 
-  if (isURLArchived(inputUrl) === false){
-    fs.writeFile(file, data, function(err){
-      if (err) {
-        console.log('error!');
-      }
-      console.log('It\'s saved!');
-    });
-  }
-
+  exports.isURLArchived(inputUrl, function(bool) {
+    if (bool) {
+    } else {
+      fs.writeFile(file, data, function(err){
+        if (err) throw err;
+        console.log('It\'s saved!');
+      });
+    }      
+  });
 };
 
