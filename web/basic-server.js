@@ -1,4 +1,4 @@
-var http = require("http");
+// var http = require("http");
 var connect = require("connect");
 var handler = require("./request-handler");
 var archive = require("../helpers/archive-helpers");

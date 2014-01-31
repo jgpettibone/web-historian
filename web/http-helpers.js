@@ -29,8 +29,8 @@ exports.serveAssets = function(res, asset) {
 
 exports.getPage = function(request, response, currentPath) {
 
-  currentPath = currentPath || url.parse(request.url).pathname;
-  console.log('currentPath parsed', url.parse(currentPath));
+  currentPath = currentPath || url.parse(request.url).pathname;     
+  // console.log('currentPath parsed', url.parse(currentPath));
 
   if (currentPath === '/') {
     currentPath = archive.paths.siteAssets + '/index.html';
@@ -44,23 +44,52 @@ exports.getPage = function(request, response, currentPath) {
 
 exports.addPage = function(request, response) {
 
-  exports.collectData(request, function(data){
-    // data = data.split('=')[1];
-    data = (data.slice(4)).trim();
-    // console.log('our data is "', data, '"');
+  exports.collectData(request, function(url){
 
-    archive.addUrlToList(data, function(err, newdata) {
-      if (err) {
-        exports.sendResponse(response, null, 404);
+    // this is the url
+    url = (url.slice(4)).trim();
+
+    archive.isUrlInList(url, function(found){
+      if (found) {
+
+        // check if it's downloaded
+        archive.isURLArchived(url, function(exists) {
+          if (exists) {
+            // we serve it up!
+            exports.redirect(response, url);
+            console.log('need to serve this page up');
+          } else {
+            // we serve up the loading page
+            exports.redirect(response, '/loading.html');
+            console.log('need to serve the loading page up');
+          }
+        });
+
       } else {
-        exports.sendResponse(response, newdata, 302);
+        // add to list
+        archive.addUrlToList(url, function(err, data){
+          if (err){
+            exports.sendResponse(response, null, 404);
+          } else {
+            // we serve up the Page Not Found
+            // exports.sendResponse(response, "404: Page Not Found", 404);
+            // we serve up the loading page
+            exports.redirect(response, '/loading.html');
+            console.log('need to serve the loading page up');
+          }
+        })
       }
     });
-
-    console.log('data is "', data.trim(), '"');
-    exports.getPage(request, response, data);
-
   });
+}
+
+
+exports.redirect = function(response, location, status){
+  console.log('in redirect with ', location);
+  status = status || 302;
+  response.writeHead(status, {Location: location});
+  response.end();
+
 }
 
 exports.sendResponse = function(response, object, status) {

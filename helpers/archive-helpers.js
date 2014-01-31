@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var http = require('http-request');
 
+
 /* You will need to reuse the same paths many times over in the course of this sprint.
   Consider calling this function in `request-handler.js` and passing in the necessary
   directories/files. This way, if you move any files, you'll only need to change your
@@ -28,7 +29,7 @@ exports.initialize = function(pathsObj){
 // modularize your code. Keep it clean!
 
 
-// returns a string list of the websites
+// returns an array of the websites
 exports.readListOfUrls = function(inputUrl, cb){
 
   fs.readFile(exports.paths.list, {encoding: 'utf-8'}, function(error, data) {
@@ -49,7 +50,7 @@ exports.isUrlInList = function(inputUrl, cb){
   var list = exports.readListOfUrls(inputUrl, function(list) {
     // console.log('in isUrlInList, the list is: ', list);
     if(list.indexOf(inputUrl) > -1){
-      console.log('in list');
+      // console.log('in list');
       cb(true);
       // return true;
     } else {
@@ -65,6 +66,7 @@ exports.isUrlInList = function(inputUrl, cb){
 exports.addUrlToList = function(inputUrl, cb){
   // console.log(exports.paths.list);
 
+  console.log('inside addURL');
   exports.isUrlInList(inputUrl, function(bool) {
     if (bool) {
       console.log('already in the file');
@@ -79,36 +81,70 @@ exports.addUrlToList = function(inputUrl, cb){
 
 // returns a boolean indicating whether or not the site has been downloaded/archived 
 exports.isURLArchived = function(inputUrl, cb){
+  console.log('in isURLArchived');
   fs.readdir(exports.paths.archivedSites, function(err, files){
-    if (files.indexOf(inputUrl)){
-      cb(true);
-    } else {
-      cb(false);
+    console.log('files = ', files, ' inputUrl = ', inputUrl);
+    var found = false;
+    for (var i = 0; i < files.length; i++) {
+      if (files[i] === inputUrl.toString()) {
+        // console.log('it is a match!');
+        found = true;
+      }
+      // else {
+      //   // cb(false);
+      // }
+    // }
+    // if (files.indexOf(inputUrl.toString())){
+    //   cb(true);
+    // } else {
+    //   cb(false);
     }
+    cb(found);
   });
 };
 
 // downloads the site
 exports.downloadUrls = function(inputUrl){
   var data;
+
+  console.log('inputUrl ', inputUrl);
+  var fileName = exports.paths.archivedSites + '/' + inputUrl
+
   http.get(inputUrl, function(err, res) {
     if (err) {
       console.log('error!');
       return;
-    }
-    data = res.buffer.toString();
-  });
-
-  var file = exports.paths.archivedSites + '/inputUrl'
-
-  exports.isURLArchived(inputUrl, function(bool) {
-    if (bool) {
     } else {
-      fs.writeFile(file, data, function(err){
-        if (err) throw err;
-        console.log('It\'s saved!');
-      });
-    }      
+      exports.isURLArchived(inputUrl, function(exists) {
+        if (!exists) {
+          fs.writeFile(fileName, res.buffer.toString(), function(err){
+            if (err) throw err;
+          })
+        }
+      })
+    }
   });
+
+
+    // http.get(inputUrl, function(err, res) {
+    //   if (err) {
+    //     console.log('error!');
+    //     return;
+    //   }
+    //   data = res.buffer.toString();
+    // });
+
+    // var file = exports.paths.archivedSites + '/' + inputUrl
+
+    // exports.isURLArchived(inputUrl, function(bool) {
+    //   if (bool) {
+    //   } else {
+    //     fs.writeFile(file, data, function(err){
+    //       if (err) throw err;
+    //       console.log('It\'s saved!');
+    //     });
+    //   }      
+    // });
+
 };
 
