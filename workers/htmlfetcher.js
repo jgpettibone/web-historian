@@ -14,6 +14,5 @@ archive.readListOfUrls(null, function(siteArray){
 
 });
 
-// archive.downloadUrls(archive.readListOfUrls(null, function(list){
-//   return list;
-// }));
+// FYI - our cron job command
+//*/1 * * * * /Users/hackreactor/.nvm/v0.10.15/bin/node /Users/hackreactor/Documents/felix/2014-01-web-historian/workers/htmlfetcher.js

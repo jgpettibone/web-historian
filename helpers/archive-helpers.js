@@ -90,14 +90,6 @@ exports.isURLArchived = function(inputUrl, cb){
         // console.log('it is a match!');
         found = true;
       }
-      // else {
-      //   // cb(false);
-      // }
-    // }
-    // if (files.indexOf(inputUrl.toString())){
-    //   cb(true);
-    // } else {
-    //   cb(false);
     }
     cb(found);
   });
@@ -124,27 +116,5 @@ exports.downloadUrls = function(inputUrl){
       })
     }
   });
-
-
-    // http.get(inputUrl, function(err, res) {
-    //   if (err) {
-    //     console.log('error!');
-    //     return;
-    //   }
-    //   data = res.buffer.toString();
-    // });
-
-    // var file = exports.paths.archivedSites + '/' + inputUrl
-
-    // exports.isURLArchived(inputUrl, function(bool) {
-    //   if (bool) {
-    //   } else {
-    //     fs.writeFile(file, data, function(err){
-    //       if (err) throw err;
-    //       console.log('It\'s saved!');
-    //     });
-    //   }      
-    // });
-
 };
 
